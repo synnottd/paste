@@ -1,6 +1,6 @@
 ---
-title: Utilities overview
-description: Our utilities are rad
+title: Primitives overview
+description: Our primitives are rad
 ---
 
 import {graphql} from 'gatsby';
@@ -10,10 +10,10 @@ import {ComponentOverviewTable} from '../../components/component-overview-table'
 import {SidebarCategoryRoutes} from '../../constants';
 import {Callout, CalloutTitle, CalloutText} from '../../components/callout';
 
-# Utilities Overview
+# Primitives Overview
 
 <Callout>
-  <CalloutTitle as="h4">Don't see a utility or component you need listed here?</CalloutTitle>
+  <CalloutTitle as="h4">Don't see a primitive, utility, or component you need listed here?</CalloutTitle>
   <UnorderedList>
     <ListItem>
       First off, we recommend{' '}
@@ -34,13 +34,13 @@ import {Callout, CalloutTitle, CalloutText} from '../../components/callout';
   </UnorderedList>
 </Callout>
 <ComponentOverviewTable
-  categoryRoute={SidebarCategoryRoutes.UTILITIES}
-  componentsList={props.data.allPasteUtility.edges}
+  categoryRoute={SidebarCategoryRoutes.PRIMITIVES}
+  componentsList={props.data.allPastePrimitive.edges}
 />
 
 export const pageQuery = graphql`
   {
-    allPasteUtility {
+    allPastePrimitive {
       edges {
         node {
           version
