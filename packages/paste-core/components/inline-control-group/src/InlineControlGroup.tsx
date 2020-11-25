@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import {Box, safelySpreadBoxProps} from '@twilio-paste/box';
+import {Stack} from '@twilio-paste/stack';
 import {Label} from '@twilio-paste/label';
 import {HelpText} from '@twilio-paste/help-text';
 
@@ -21,7 +22,7 @@ const InlineControlGroup: React.FC<InlineControlGroupProps> = ({
   errorText,
   helpText,
   legend,
-  orientation,
+  orientation = 'vertical',
   required,
   value,
   ...props
@@ -33,32 +34,16 @@ const InlineControlGroup: React.FC<InlineControlGroupProps> = ({
       </Label>
       {helpText && <HelpText marginTop="space0">{helpText}</HelpText>}
       <Box marginLeft="space20" marginRight="space20" marginTop="space40">
-        {React.Children.map(children, child => {
-          return (
-            <Box
-              display={orientation === 'horizontal' ? 'inline-block' : 'block'}
-              marginBottom="space40"
-              marginRight={orientation === 'horizontal' ? 'space70' : null}
-            >
-              {child}
-            </Box>
-          );
-        })}
-        {errorText && (
-          <HelpText marginTop="space0" variant="error">
-            {errorText}
-          </HelpText>
-        )}
+        <Stack orientation={orientation} spacing={orientation === 'horizontal' ? 'space70' : 'space40'}>
+          {children}
+        </Stack>
+        {errorText && <HelpText variant="error">{errorText}</HelpText>}
       </Box>
     </Box>
   );
 };
 
 InlineControlGroup.displayName = 'InlineControlGroup';
-
-InlineControlGroup.defaultProps = {
-  orientation: 'vertical',
-};
 
 if (process.env.NODE_ENV === 'development') {
   InlineControlGroup.propTypes = {

@@ -30,6 +30,9 @@
       "path": "../screen-reader-only"
     },
     {
+      "path": "../../layout/stack"
+    },
+    {
       "path": "../../../paste-style-props"
     },
     {
