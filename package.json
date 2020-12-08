@@ -133,6 +133,7 @@
     "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-unicorn": "^23.0.0",
+    "search-in-file": "^1.2.2",
     "gh-pages": "^2.1.1",
     "git-branch-is": "^3.0.0",
     "graphql": "^14.6.0",
