@@ -4,8 +4,18 @@ import {
   UseComboboxPrimitiveReturnValue,
 } from '@twilio-paste/combobox-primitive';
 import {InputVariants, InputProps} from '@twilio-paste/input';
+import {VirtualItem} from 'react-virtual/types';
 
 export type Item = string | {[key: string]: any};
+
+export type ScrollAlignment = 'start' | 'center' | 'end' | 'auto';
+
+export interface ScrollToOffsetOptions {
+  align: ScrollAlignment;
+}
+export interface ScrollToIndexOptions {
+  align: ScrollAlignment;
+}
 
 export interface ComboboxProps extends Omit<InputProps, 'id' | 'type' | 'value'> {
   autocomplete?: boolean;
@@ -30,16 +40,31 @@ export interface ComboboxProps extends Omit<InputProps, 'id' | 'type' | 'value'>
 
 export interface ItemProps extends Pick<ComboboxProps, 'optionTemplate'> {
   item: Item;
+  items: UseComboboxPrimitiveProps<Item>['items'];
   index: number | string;
   getItemProps: any;
   highlightedIndex: UseComboboxPrimitiveState<Item>['highlightedIndex'];
   inGroup?: boolean;
+  virtualRow: VirtualItem;
 }
 
 export interface ItemsProps extends Omit<ItemProps, 'item' | 'index'> {
   items: Item[];
+  rowVirtualizer: {
+    virtualItems: VirtualItem[];
+    totalSize: number;
+    scrollToOffset: (index: number, options?: ScrollToOffsetOptions | undefined) => void;
+    scrollToIndex: (index: number, options?: ScrollToIndexOptions | undefined) => void;
+  };
 }
 
-export interface GroupItemsProps extends ItemsProps, Pick<ComboboxProps, 'groupLabelTemplate' | 'groupItemsBy'> {}
+export interface GroupItemsProps extends ItemsProps, Pick<ComboboxProps, 'groupLabelTemplate' | 'groupItemsBy'> {
+  rowVirtualizer: {
+    virtualItems: VirtualItem[];
+    totalSize: number;
+    scrollToOffset: (index: number, options?: ScrollToOffsetOptions | undefined) => void;
+    scrollToIndex: (index: number, options?: ScrollToIndexOptions | undefined) => void;
+  };
+}
 
 export type ListBoxProps = GroupItemsProps;

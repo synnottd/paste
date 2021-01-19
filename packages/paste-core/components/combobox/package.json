@@ -74,6 +74,7 @@
     "react-dom": "^16.8.6"
   },
   "dependencies": {
-    "lodash.groupby": "^4.6.0"
+    "lodash.groupby": "^4.6.0",
+    "react-virtual": "^2.3.2"
   }
 }
