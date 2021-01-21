@@ -36,7 +36,7 @@ const ComboboxListboxOption = React.forwardRef<HTMLLIElement, ComboboxListboxOpt
         top={0}
         left={0}
         width="100%"
-        height={virtualRow.size}
+        // height={virtualRow.size}
         transform={`translateY(${virtualRow.start}px)`}
         {...VariantStyles[variant]}
       >

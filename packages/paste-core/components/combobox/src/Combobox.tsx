@@ -85,47 +85,56 @@ const GroupedItems = React.forwardRef<HTMLDivElement, GroupItemsProps>(
 
     return (
       <>
-        {groupedItemKeys.map((groupedItemKey) => {
-          // These items are categorized as ungrouped
-          if (groupedItemKey === 'undefined') {
-            return groupedItems[groupedItemKey].map((item: {[key: string]: any}, index: number) => (
-              <>
-                <Item
-                  item={item}
-                  index={item.index}
-                  key={UIDSeed(`ungrouped-${index}`)}
-                  getItemProps={getItemProps}
-                  highlightedIndex={highlightedIndex}
-                  optionTemplate={optionTemplate}
-                  items={items}
-                />
-              </>
-            ));
-          }
+        <li key="total-size" style={{height: rowVirtualizer.totalSize}} />
+        {rowVirtualizer.virtualItems.map((virtualRow) => {
           return (
-            <ComboboxListboxGroup
-              groupName={groupedItemKey}
-              groupLabelTemplate={groupLabelTemplate}
-              key={UIDSeed(groupedItemKey)}
-              ref={ref}
-            >
-              {groupedItems[groupedItemKey].map((item: {[key: string]: any}, index: number) => {
+            <>
+              {groupedItemKeys.map((groupedItemKey) => {
+                // These items are categorized as ungrouped
+                if (groupedItemKey === 'undefined') {
+                  return groupedItems[groupedItemKey].map((item: {[key: string]: any}, index: number) => (
+                    <>
+                      <Item
+                        // item={item}
+                        // index={item.index}
+                        key={UIDSeed(`ungrouped-${index}`)}
+                        getItemProps={getItemProps}
+                        highlightedIndex={highlightedIndex}
+                        optionTemplate={optionTemplate}
+                        items={items}
+                        virtualRow={virtualRow}
+                      />
+                    </>
+                  ));
+                }
                 return (
-                  <>
-                    <Item
-                      item={item}
-                      index={item.index}
-                      key={UIDSeed(`${groupedItemKey}-${index}`)}
-                      getItemProps={getItemProps}
-                      highlightedIndex={highlightedIndex}
-                      optionTemplate={optionTemplate}
-                      inGroup
-                      items={items}
-                    />
-                  </>
+                  <ComboboxListboxGroup
+                    groupName={groupedItemKey}
+                    groupLabelTemplate={groupLabelTemplate}
+                    key={UIDSeed(groupedItemKey)}
+                    ref={ref}
+                  >
+                    {groupedItems[groupedItemKey].map((item: {[key: string]: any}, index: number) => {
+                      return (
+                        <>
+                          <Item
+                            // item={item}
+                            // index={item.index}
+                            key={UIDSeed(`${groupedItemKey}-${index}`)}
+                            getItemProps={getItemProps}
+                            highlightedIndex={highlightedIndex}
+                            optionTemplate={optionTemplate}
+                            inGroup
+                            items={items}
+                            virtualRow={virtualRow}
+                          />
+                        </>
+                      );
+                    })}
+                  </ComboboxListboxGroup>
                 );
               })}
-            </ComboboxListboxGroup>
+            </>
           );
         })}
       </>
@@ -188,9 +197,9 @@ const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     const rowVirtualizer = useVirtual({
       size: items.length,
       parentRef: listRef,
-      estimateSize: React.useCallback(() => 36, []),
+      // estimateSize: React.useCallback(() => 36, []),
       overscan: 2,
-      paddingStart: 8,
+      paddingStart: 8, // map to token
     });
     const {
       getComboboxProps,
