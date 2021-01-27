@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import {css, styled} from '@twilio-paste/styling-library';
-import {useUID, useUIDSeed} from '@twilio-paste/uid-library';
+import {useVirtual} from 'react-virtual';
+import {useUID} from '@twilio-paste/uid-library';
 import {useComboboxPrimitive} from '@twilio-paste/combobox-primitive';
 import {ChevronDownIcon} from '@twilio-paste/icons/esm/ChevronDownIcon';
 import {Box} from '@twilio-paste/box';
@@ -9,125 +9,13 @@ import {InputBox, InputChevronWrapper} from '@twilio-paste/input-box';
 import {Label} from '@twilio-paste/label';
 import {HelpText} from '@twilio-paste/help-text';
 import type {HelpTextVariants} from '@twilio-paste/help-text';
-import {InputElement} from '@twilio-paste/input';
 import type {InputVariants} from '@twilio-paste/input';
 import type {TextColor} from '@twilio-paste/style-props';
-import {ComboboxInputWrapper} from './ComboboxInputWrapper';
-import {ComboboxListbox} from './ComboboxListbox';
-import {ComboboxListboxGroup} from './ComboboxListboxGroup';
-import {ComboboxListboxOption} from './ComboboxListboxOption';
-import {getIndexedItems, getGroupedItems} from './helpers';
-import type {GroupItemsProps, ItemProps, ItemsProps, ListBoxProps, ComboboxProps} from './types';
-
-// Fixes chevron overlapping really long text
-// Extra right padding is removed when autocomplete is true
-/* eslint-disable emotion/syntax-preference */
-const StyledInputAsSelect = styled(InputElement)<ComboboxProps>((props) =>
-  css({
-    paddingRight: !props.autocomplete ? 'space100' : null,
-  })
-);
-/* eslint-enable */
-
-const Item = React.forwardRef<HTMLDivElement, ItemProps>(
-  ({item, index, getItemProps, highlightedIndex, optionTemplate, inGroup}, ref) => {
-    const UIDSeed = useUIDSeed();
-    return (
-      <ComboboxListboxOption
-        {...getItemProps({item, index})}
-        highlighted={highlightedIndex === index}
-        key={UIDSeed(item)}
-        variant={inGroup ? 'groupOption' : 'default'}
-        ref={ref}
-      >
-        {optionTemplate ? optionTemplate(item) : item}
-      </ComboboxListboxOption>
-    );
-  }
-);
-
-const Items: React.FC<ItemsProps> = ({items, getItemProps, highlightedIndex, optionTemplate}) => {
-  return (
-    <>
-      {items.map((item, index) => (
-        <Item
-          // eslint-disable-next-line react/no-array-index-key
-          key={index}
-          item={item}
-          index={index}
-          getItemProps={getItemProps}
-          highlightedIndex={highlightedIndex}
-          optionTemplate={optionTemplate}
-        />
-      ))}
-    </>
-  );
-};
-
-const GroupedItems = React.forwardRef<HTMLDivElement, GroupItemsProps>(
-  ({items, getItemProps, highlightedIndex, optionTemplate, groupLabelTemplate, groupItemsBy}, ref) => {
-    const UIDSeed = useUIDSeed();
-
-    // Should never happen
-    if (groupItemsBy == null) {
-      return null;
-    }
-
-    // Creating indexed Items so we can use original flat array index values for indexing within groups.
-    const indexedItems = getIndexedItems(items);
-    const groupedItems = getGroupedItems(indexedItems, groupItemsBy);
-    const groupedItemKeys = Object.keys(groupedItems);
-
-    return (
-      <>
-        {groupedItemKeys.map((groupedItemKey) => {
-          // These items are categorized as ungrouped
-          if (groupedItemKey === 'undefined') {
-            return groupedItems[groupedItemKey].map((item: {[key: string]: any}, index: number) => (
-              <Item
-                item={item}
-                index={item.index}
-                key={UIDSeed(`ungrouped-${index}`)}
-                getItemProps={getItemProps}
-                highlightedIndex={highlightedIndex}
-                optionTemplate={optionTemplate}
-              />
-            ));
-          }
-          return (
-            <ComboboxListboxGroup
-              groupName={groupedItemKey}
-              groupLabelTemplate={groupLabelTemplate}
-              key={UIDSeed(groupedItemKey)}
-              ref={ref}
-            >
-              {groupedItems[groupedItemKey].map((item: {[key: string]: any}, index: number) => {
-                return (
-                  <Item
-                    item={item}
-                    index={item.index}
-                    key={UIDSeed(`${groupedItemKey}-${index}`)}
-                    getItemProps={getItemProps}
-                    highlightedIndex={highlightedIndex}
-                    optionTemplate={optionTemplate}
-                    inGroup
-                  />
-                );
-              })}
-            </ComboboxListboxGroup>
-          );
-        })}
-      </>
-    );
-  }
-);
-
-const ListBox: React.FC<ListBoxProps> = ({groupItemsBy, groupLabelTemplate, ...props}) =>
-  groupItemsBy ? (
-    <GroupedItems {...props} groupItemsBy={groupItemsBy} groupLabelTemplate={groupLabelTemplate} />
-  ) : (
-    <Items {...props} />
-  );
+import {ComboboxInputSelect} from './styles/ComboboxInputSelect';
+import {ComboboxInputWrapper} from './styles/ComboboxInputWrapper';
+import {ComboboxListbox} from './styles/ComboboxListbox';
+import {ComboboxItems} from './ComboboxItems';
+import type {RowVirtualizer, ComboboxProps} from './types';
 
 const getHelpTextVariant = (variant: InputVariants, hasError: boolean | undefined): HelpTextVariants => {
   if (hasError && variant === 'inverse') {
@@ -172,7 +60,20 @@ const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     },
     ref
   ) => {
+    const parentRef = React.useRef();
     const helpTextId = useUID();
+
+    // Only virtualize non-grouped items
+    const rowVirtualizer: RowVirtualizer = !groupItemsBy
+      ? useVirtual({
+          size: items.length,
+          parentRef,
+          estimateSize: React.useCallback(() => 36, []),
+          overscan: 4,
+          paddingStart: 8, // map to token
+        })
+      : undefined;
+
     const {
       getComboboxProps,
       getInputProps,
@@ -187,7 +88,10 @@ const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       useComboboxPrimitive({
         initialSelectedItem,
         items,
-        onHighlightedIndexChange,
+        onHighlightedIndexChange: (args) => {
+          rowVirtualizer && rowVirtualizer.scrollToIndex(args.highlightedIndex);
+          onHighlightedIndexChange && onHighlightedIndexChange(args);
+        },
         onInputValueChange,
         onIsOpenChange,
         onSelectedItemChange,
@@ -232,7 +136,7 @@ const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
           variant={variant}
         >
           <ComboboxInputWrapper {...getComboboxProps({role: 'combobox'})}>
-            <StyledInputAsSelect
+            <ComboboxInputSelect
               {...getToggleButtonProps({tabIndex: 0})}
               {...getInputProps({disabled, ref})}
               {...(!autocomplete ? {onChange: (event) => event.preventDefault()} : undefined)}
@@ -248,9 +152,10 @@ const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
             )}
           </ComboboxInputWrapper>
         </InputBox>
-        <ComboboxListbox hidden={!isOpen} {...getMenuProps()}>
-          <ListBox
+        <ComboboxListbox hidden={!isOpen} {...getMenuProps({ref: parentRef})}>
+          <ComboboxItems
             items={items}
+            rowVirtualizer={rowVirtualizer}
             getItemProps={getItemProps}
             highlightedIndex={highlightedIndex}
             optionTemplate={optionTemplate}

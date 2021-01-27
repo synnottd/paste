@@ -23,6 +23,15 @@ const items = [
   'List',
   'Modal',
   'Paragraph',
+  'Alert',
+  'Anchor',
+  'Button',
+  'Card',
+  'Heading',
+  'A component with a really really really really really really really really long name',
+  'List',
+  'Modal',
+  'Paragraph',
 ];
 
 interface IconItems {
